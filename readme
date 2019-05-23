@@ -1,0 +1,2 @@
+This is a local plugin that can be used to intercept moodle docs and moodle errors so that they can be substituted / redirected
+to local guidance, rather than the Mooe Core docs.
