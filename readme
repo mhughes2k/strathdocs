@@ -1,2 +1,26 @@
 This is a local plugin that can be used to intercept moodle docs and moodle errors so that they can be substituted / redirected
 to local guidance, rather than the Mooe Core docs.
+
+Redirecting Errors
+Set the $CFG->errordocroot to $CFG-> . '/local/strathdocs/index.php';
+
+All errors will be directed to this page. If the error module is part of Moodle core it will be passed on to the 'standard' 
+moodle docs destination page (i.e. http://moodle.org/docs/en/<module>/<errorcode>
+
+If it is not the plugin will look for a string the in the specified modules language pack in the form "<errorcode>_url".
+
+If this string exists, then the browser will be redirected to the (expected to be a) url as set in the language pack.
+
+Redirecting Documentation Pages
+
+You can also redirect Moodle documentation pages (i.e. the link at the bottom of the page that says "Moodle docs for this page".
+
+Set the $CFG->docroot to $CFG-> . '/local/strathdocs/index.php';
+
+By default this link goes to something like "http://docs.moodle.org/36/en/course/view/topics"
+36 - Moodle Version Number
+en - Language
+course - module
+view/topics - a "thing"
+
+Again for non-standard plugins if the language string "<thing>_url" exists, the browser will be redirected to that location.
