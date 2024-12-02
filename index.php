@@ -49,7 +49,7 @@ if ($doc !== false) {
     $PAGE->set_title("Documentation for \"{$doc['title']}\"");
     $PAGE->set_heading($doc['title']);
     echo $OUTPUT->header();
-    p($doc['content']);
+    echo($doc['content']);
     if (!empty($doc['fixlinks'])) {
         // Only display solution links that can be seen.
         $links = array_filter(
@@ -88,12 +88,12 @@ if ($doc !== false) {
     unset($CFG->docroot);
     $corepath = "{$module}/{$code}";
     $docsurl = new \moodle_url(get_docs_url($corepath));
-    if ($doc['hidecoredoclink']??true) {
+//    if ($doc['hidecoredoclink']??false) {
         echo \html_writer::tag('p',
             get_string('possiblecoredoc', 'local_strathdocs',
                 (object)['coredocurl' => $docsurl, 'relativepath' => $relativepath]
             ));
-    }
+//    }
 
     if ($PAGE->user_is_editing() && $isdocmanager) {
         // TODO Display management UI.
@@ -106,7 +106,7 @@ if ($doc !== false) {
 
 
         $docmanagerui = new \local_strathdocs\output\docmanager_buttons(
-            \local_strathdocs\output\docmanager_buttons::DOC_ACTION_EDIT,
+            doc_manager::DOC_ACTION_EDIT,
             $editurl,
             $docsurl
         );
@@ -129,7 +129,7 @@ if ($doc !== false) {
         $docsurl = new \moodle_url(get_docs_url($corepath));
         // Provide option to override the message.
         $docmanagerui = new \local_strathdocs\output\docmanager_buttons(
-            \local_strathdocs\output\docmanager_buttons::DOC_ACTION_CREATE,
+            doc_manager::DOC_ACTION_CREATE,
             $editurl,
             $docsurl
         );

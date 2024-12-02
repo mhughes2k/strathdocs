@@ -16,14 +16,15 @@
 
 namespace local_strathdocs\output;
 use core\output\named_templatable;
+use local_strathdocs\doc_manager;
 use renderable;
 use renderer_base;
 use moodle_url;
 
 class docmanager_buttons implements named_templatable, renderable
 {
-    public const DOC_ACTION_CREATE = "create";
-    public const DOC_ACTION_EDIT = "edit";
+//    public const DOC_ACTION_CREATE = "create";
+//    public const DOC_ACTION_EDIT = "edit";
 
     public function __construct(
         public string $action,
@@ -40,7 +41,7 @@ class docmanager_buttons implements named_templatable, renderable
     public function export_for_template(renderer_base $output) {
         $data = new \stdClass();
         $data->action = $this->action;
-        $data->create = $this->action == self::DOC_ACTION_CREATE ;
+        $data->create = $this->action == doc_manager::DOC_ACTION_CREATE ;
         $data->actionurl = $this->actionUrl->out();
         $data->actiontext = get_string("action_{$this->action}", 'local_strathdocs');
         $data->defaultaction = $this->defaultActionUrl->out();

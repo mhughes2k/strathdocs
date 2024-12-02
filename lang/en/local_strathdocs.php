@@ -10,6 +10,8 @@ $string['action_edit'] = 'Edit Documentation Override';
 $string['strathdocs:managedocs'] = 'Manage custom docs';
 $string['docnotfound'] = 'Document not found';
 $string['editdoc'] = 'Edit Documentation Override';
+$string['hidecoredoclink'] = 'Hide Core Documentation Link';
+$string['hidecoredoclink_help'] = 'Hide Core Documentation Link';
 $string['overridedoc'] = 'Create Override Documentation';
 $string['viewcoredoc'] = 'View Moodle Core Documentation';
 $string['possiblecoredoc'] = 'There may be information available for "<a href="{$a->coredocurl}">{$a->relativepath}</a>" on the Moodle Core Documentation site.';
@@ -22,6 +24,8 @@ $string['content'] = 'Page Content';
 $string['content_help'] = 'Page Content';
 $string['fixtitle'] = 'Title';
 $string['fixurl'] = 'URL';
+$string['fixcap'] = 'Capability Required';
+$string['fixcap_help'] = 'Capability Required';
 $string['fixdescription'] = 'Description';
 $string['defaultdocs'] = '{
     "error/mod_seacow/invalidapikeysetting": {

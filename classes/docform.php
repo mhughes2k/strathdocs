@@ -23,6 +23,8 @@ class docform extends moodleform {
     protected function definition() {
 
         $mform = $this->_form;
+        $mform->addElement('hidden', 'numfixes');
+        $mform->setType('numfixes', PARAM_INT);
         $mform->addElement('hidden', 'action');
         $mform->setType('action', PARAM_ALPHA);
 
@@ -34,12 +36,16 @@ class docform extends moodleform {
         $mform->setType('code', PARAM_ALPHAEXT);
 
         $mform->addElement('text', 'title', get_string('title', 'local_strathdocs'));
+        $mform->setType('title',PARAM_RAW);
         $mform->addElement('editor', 'content', get_string('content', 'local_strathdocs'));
         $mform->addElement('checkbox', 'hidecoredoclink', get_string('hidecoredoclink', 'local_strathdocs'), false);
 
         $mform->addElement('header', 'hdrfixlinks', get_string('fixlinks', 'local_strathdocs'));
-        $this->generate_fixlinks();
 
+    }
+
+    public function definition_after_data() {
+        $this->generate_fixlinks();
         $this->add_action_buttons();
     }
 
@@ -48,15 +54,13 @@ class docform extends moodleform {
 //        $fixlinks = $mform->addElement('group', 'fixlinks', get_string('fixlinks', 'local_strathdocs'), '', false);
         $repeats = [
             $mform->createElement('text', 'fixtitle', get_string('fixtitle', 'local_strathdocs')),
+//            $mform->createElement('text', 'fixcap', get_string('fixcap', 'local_strathdocs')),
             $mform->createElement('text', 'fixurl', get_string('fixurl', 'local_strathdocs')),
             $mform->createElement('editor', 'fixdescription', get_string('fixdescription', 'local_strathdocs')),
         ];
         $repeatno = 1;
-//        if ($this->_instance) {
-//
-//        } else {
-//            $repeatno = 1;
-//        }
+        $repeatno = $mform->getElementValue('numfixes');
+
         $options = [
             'fixtitle' => [
                 'type' => PARAM_TEXT,
