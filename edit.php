@@ -24,6 +24,42 @@ $PAGE->set_heading("Creating Override Documentation for ". $relativepath);
 
 $manager = new doc_manager();
 
+$form = new \local_strathdocs\docform(null, ['type' => $type, 'module' => $module, 'code' => $code]);
+if ($form->is_cancelled()) {
+    redirect(new moodle_url("/local/strathdocs/index.php/{$type}/{$module}/{$code}"));
+}
+if ($data = $form->get_data()) {
+    var_dump($data);
+    $doc = $manager->create_doc();
+
+    $key = "{$data->type}/{$data->module}/{$data->code}";
+    $doc->title = $data->title;
+    $doc->content = $data->content['text'];
+    $doc->fixlinks = [];
+    $doc->hidecoredoclink = $data->hidecoredoclink;
+    for ($i = 0; $i < $data->fixlinks_repeats; $i++) {
+        $fixlink = new \stdClass();
+        $fixlink->title = $data->fixtitle[$i];
+        $fixlink->url = $data->fixurl[$i];
+        $fixlink->description = $data->fixdescription[$i]['text'];
+        $doc->fixlinks[] = $fixlink;
+    }
+    var_dump($doc);
+    $doc = $manager->add_doc($data->type, $data->module, $data->code, $doc);
+    $version = $CFG->branch;
+    $lang = current_language();
+    redirect(new moodle_url("/local/strathdocs/index.php/{$version}/{$lang}/{$type}/{$module}/{$code}"));
+} else {
+    $form->set_data([
+        'type' => $type,
+        'module' => $module,
+        'code' => $code,
+        'action' => $action,
+    ]);
+}
+
 echo $OUTPUT->header();
-var_dump($manager->create_doc());
+
+echo $form->display();
+
 echo $OUTPUT->footer();

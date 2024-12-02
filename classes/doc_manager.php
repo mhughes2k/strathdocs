@@ -5,10 +5,10 @@ class doc_manager {
 
     private $config = null;
     function __construct() {
-        $config = json_decode(get_config('local_strathdocs', 'documents'));
+        $config = json_decode(get_config('local_strathdocs', 'documents'), true);
         if (empty($config)) {
             $defaultconfig = get_string('defaultdocs', 'local_strathdocs');
-            $this->config =json_decode($defaultconfig, true);
+            $this->config = json_decode($defaultconfig, true);
         } else {
             $this->config = $config;
         }
@@ -31,6 +31,7 @@ class doc_manager {
         $docpath = "{$type}/{$module}/{$code}";
         $this->config[$docpath] = $doc;
         set_config('documents', json_encode($this->config), 'local_strathdocs');
+        return $this->get_doc($type, $module, $code);
     }
 
     /**

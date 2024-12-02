@@ -1,0 +1,9 @@
+<div>
+    {{#create}}
+        <a href="{{{actionurl}}}" class="btn btn-danger">{{actiontext}}</a>
+    {{/create}}
+    {{^create}}
+        <a href="{{{actionurl}}}" class="btn btn-secondary">{{actiontext}}</a>
+    {{/create}}
+    <a href="{{{defaultaction}}}" class="btn btn-primary">{{defaultactiontext}}</a>
+</div>

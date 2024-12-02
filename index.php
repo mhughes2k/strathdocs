@@ -10,6 +10,7 @@ if (!$relativepath) {
     throw new \moodle_exception('pathdoesnotstartslash', 'local_strathdocs');
 }
 
+//var_dump(explode('/', ltrim($relativepath, '/')));
 list($branch, $lang, $type, $module, $code) = explode('/', ltrim($relativepath, '/'));
 
 //if (count($args) == 0) {
@@ -26,11 +27,14 @@ $core = core_component::get_component_names();
 $pm = core_plugin_manager::instance();
 
 $moduleinfo = $pm->get_plugin_info($module);
-if ($moduleinfo->is_standard()) {
-    $corepath = "{$module}/{$code}";
-    $docsurl = get_docs_url($corepath);
-    redirect($docsurl);
-    exit();
+if (!is_null($moduleinfo)) {
+    if ($moduleinfo->is_standard()) {
+        unset($CFG->docsroot);
+        $corepath = "{$module}/{$code}";
+        $docsurl = get_docs_url($corepath);
+        redirect($docsurl);
+        exit();
+    }
 }
 
 $isdocmanager = has_capability('local/strathdocs:managedocs', \context_system::instance());
@@ -42,55 +46,115 @@ if ($doc !== false) {
     $PAGE->set_url(new moodle_url('/local/strathdocs/index.php/'.$relativepath));
     $PAGE->set_context(\context_system::instance());
     $PAGE->set_pagelayout('standard');
+    $PAGE->set_title("Documentation for \"{$doc['title']}\"");
     $PAGE->set_heading($doc['title']);
     echo $OUTPUT->header();
     p($doc['content']);
     if (!empty($doc['fixlinks'])) {
-        echo \html_writer::tag('h3', get_string('fixlinks', 'local_strathdocs'));
+        // Only display solution links that can be seen.
+        $links = array_filter(
+            $doc['fixlinks'],
+            function ($link) use ($PAGE) {
+                $caps = isset($link['capabilities']) ? $link['capabilities']: [];
+                if (!empty($caps)) {
+                    foreach($caps as $cap) {
+                        if (!has_capability($cap, $PAGE->context)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
+        if (!empty($links)) {
+            echo \html_writer::tag('h3', get_string('fixlinks', 'local_strathdocs'));
+            echo \html_writer::alist(
+                array_map(function ($link) {
+                    $content = $link['title'];
+                    if (isset($link['url'])) {
+                        $content = \html_writer::link($link['url'], $link['title']);
+                    }
+                    if (isset($link['description'])) {
+                        $content .= \html_writer::tag('div', $link['description']);
+                    }
+                    return $content;
+                },
+                $links
+                )
+            );
+        }
+    }
 
-        echo \html_writer::alist(array_map(function ($link) {
-            $content =  \html_writer::link($link['url'], $link['title']) ;
-            if (isset($link['description'])) {
-                $content .= \html_writer::tag('div', $link['description']);
-            }
-            return $content;
-        }, $doc['fixlinks']));
+    // Display message about there potentially being Core Moodle Docs.
+    unset($CFG->docroot);
+    $corepath = "{$module}/{$code}";
+    $docsurl = new \moodle_url(get_docs_url($corepath));
+    if ($doc['hidecoredoclink']??true) {
+        echo \html_writer::tag('p',
+            get_string('possiblecoredoc', 'local_strathdocs',
+                (object)['coredocurl' => $docsurl, 'relativepath' => $relativepath]
+            ));
+    }
+
+    if ($PAGE->user_is_editing() && $isdocmanager) {
+        // TODO Display management UI.
+        $editurl = new moodle_url('/local/strathdocs/edit.php', [
+            'type' => $type,
+            'module' => $module,
+            'code' => $code,
+            'action' => 'edit'
+        ]);
+
+
+        $docmanagerui = new \local_strathdocs\output\docmanager_buttons(
+            \local_strathdocs\output\docmanager_buttons::DOC_ACTION_EDIT,
+            $editurl,
+            $docsurl
+        );
+
+        echo $OUTPUT->render($docmanagerui);
     }
     echo $OUTPUT->footer();
     exit();
 } else {
+    // No override page found, but we're a document manager so may want to add one.
     if ($isdocmanager) {
-        // Provide option to override the message.
-        $overrideurl = new moodle_url('/local/strathdocs/edit.php', [
+        $editurl = new moodle_url('/local/strathdocs/edit.php', [
             'type' => $type,
             'module' => $module,
             'code' => $code,
             'action' => 'create'
         ]);
+        $corepath = "{$module}/{$code}";
+        unset($CFG->docroot);
+        $docsurl = new \moodle_url(get_docs_url($corepath));
+        // Provide option to override the message.
+        $docmanagerui = new \local_strathdocs\output\docmanager_buttons(
+            \local_strathdocs\output\docmanager_buttons::DOC_ACTION_CREATE,
+            $editurl,
+            $docsurl
+        );
+
         $message =  \html_writer::tag('p', get_string('docnotfound', 'local_strathdocs'));
-        $overridebutton = new single_button($overrideurl, get_string('overridedoc', 'local_strathdocs'));
 
         $PAGE->set_context(\context_system::instance());
         $PAGE->set_url(new moodle_url('/local/strathdocs/index.php/'.$relativepath));
         $PAGE->set_heading("Documentation for ". $relativepath);
-        $corepath = "{$module}/{$code}";
-        unset($CFG->docroot);
-        $docsurl = get_docs_url($corepath);
-        $docsbutton = new single_button(new \moodle_url($docsurl), get_string('viewcoredoc', 'local_strathdocs'));
+
         echo $OUTPUT->header();
         echo $message;
-        echo $OUTPUT->render($overridebutton);
-        echo $OUTPUT->render($docsbutton);
+        if ($PAGE->user_is_editing() && $isdocmanager) {
+            echo $OUTPUT->render($docmanagerui);
+        }
         echo $OUTPUT->footer();
+        exit();
     } else {
-// Fall back to Moodle Docs
+        // Fall back to Moodle Docs.
         unset($CFG->docroot);
         $corepath = "{$module}/{$code}";
         $docsurl = get_docs_url($corepath);
 
         redirect($docsurl);
         exit();
-//print_error("notfound");
     }
 }
 
